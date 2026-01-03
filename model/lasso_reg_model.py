@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.linear_model import Ridge
+
+from sklearn.linear_model import Lasso
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
@@ -30,18 +31,19 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 # --------------------------------------------------
-# Pipeline: Scaling + Ridge
+# Pipeline: Scaling + Lasso
 # --------------------------------------------------
 pipeline = Pipeline([
     ("scaler", StandardScaler()),
-    ("ridge", Ridge())
+    ("lasso", Lasso(max_iter=10000))
 ])
 
 # --------------------------------------------------
 # Hyperparameter grid
+# (Lasso needs small alphas)
 # --------------------------------------------------
 param_grid = {
-    "ridge__alpha": [0.001, 0.01, 0.1, 1, 10, 100, 1000]
+    "lasso__alpha": [0.0001, 0.001, 0.01, 0.1, 1]
 }
 
 # --------------------------------------------------
@@ -62,7 +64,7 @@ grid.fit(X_train, y_train)
 # --------------------------------------------------
 # Best results
 # --------------------------------------------------
-print("Best alpha:", grid.best_params_["ridge__alpha"])
+print("Best alpha:", grid.best_params_["lasso__alpha"])
 print("Best CV RMSE:", -grid.best_score_)
 
 # --------------------------------------------------
@@ -83,6 +85,22 @@ plt.scatter(y_test, y_pred, alpha=0.5)
 plt.plot([y.min(), y.max()], [y.min(), y.max()], 'r--')
 plt.xlabel("Actual House Prices")
 plt.ylabel("Predicted House Prices")
-plt.title("Ridge Regression (Tuned) – Actual vs Predicted")
+plt.title("Lasso Regression (Tuned) – Actual vs Predicted")
 plt.grid(True)
 plt.show()
+
+# --------------------------------------------------
+# Feature selection insight (VERY IMPORTANT)
+# --------------------------------------------------
+lasso_model = best_model.named_steps["lasso"]
+coef = lasso_model.coef_
+
+feature_names = X.columns
+selected_features = feature_names[coef != 0]
+
+print("\nNumber of features before Lasso:", len(feature_names))
+print("Number of features after Lasso:", len(selected_features))
+
+print("\nSelected features:")
+for f in selected_features:
+    print(f)
