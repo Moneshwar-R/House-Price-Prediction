@@ -4,7 +4,6 @@ from sklearn.ensemble import AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.impute import SimpleImputer
-
 # ----------------------------------
 # 1. LOAD DATA
 # ----------------------------------
